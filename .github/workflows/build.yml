@@ -1,47 +1,32 @@
 name: Build iOS Dylib
 
-
-
 on:
-
   workflow_dispatch:
 
-
-
 jobs:
-
   build:
-
     runs-on: macos-latest
-
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v4
 
-
-
       - name: Build Dylib
-
         run: |
-
+          # 저장소 내 모든 .m 파일 탐색
+          M_FILE=$(find . -maxdepth 3 -name "*.m" | head -n 1)
+          if [ -z "$M_FILE" ]; then
+            echo "Error: .m 파일을 찾을 수 없습니다."
+            exit 1
+          fi
+          echo "찾은 소스 파일: $M_FILE"
+          
           xcrun --sdk iphoneos clang -dynamiclib -arch arm64 \
-
             -isysroot $(xcrun --sdk iphoneos --show-sdk-path) \
-
             -framework Foundation -framework UIKit \
-
-            RobloxAFK.m -o RobloxAFK.dylib
-
-
+            "$M_FILE" -o RobloxAFK.dylib
 
       - name: Upload Artifact
-
         uses: actions/upload-artifact@v4
-
         with:
-
           name: RobloxAFK-dylib
-
           path: RobloxAFK.dylib
